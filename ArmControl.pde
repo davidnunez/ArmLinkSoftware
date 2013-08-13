@@ -855,28 +855,64 @@ void draw()
     wristAngleValBytes = intToBytes( Integer.parseInt(wristAngleField.getText())+ 90);
     gripperValBytes = intToBytes(Integer.parseInt(gripperField.getText())); 
     deltaValBytes = intToBytes(Integer.parseInt(deltaField.getText())); 
-    extValBytes = intToBytes(Integer.parseInt(extField.getText())); 
-    updateFlag =0 ; 
-    
+    extValBytes = intToBytes(Integer.parseInt(extField.getText()));     
     //println(xValBytes[0]);
     //println(xValBytes[1]);
-    
-   
-    
-  buttonByte = 0;
-   for(int i=0;i<8;i++)
-  {
-    if(buttonBox.getArrayValue()[i] == 1)
+      
+      
+    buttonByte = 0;
+     for(int i=0;i<8;i++)
     {
-      buttonByte += pow(2,i);
-      //println(buttonByte);
-      //buttonState[i] = 0;
+      if(buttonBox.getArrayValue()[i] == 1)
+      {
+        buttonByte += pow(2,i);
+        //println(buttonByte);
+        //buttonState[i] = 0;
+      }
     }
-  }
+    
+    
+    if(updateFlag ==1)
+    {
+      if(sPort != null)
+      {
+        sPort.write(0xff);          //header
+   
+        sPort.write(xValBytes[1]); //X Coord High Byte
+        sPort.write(xValBytes[0]); //X Coord Low Byte
   
+        sPort.write(yValBytes[1]); //Y Coord High Byte
+        sPort.write(yValBytes[0]); //Y Coord Low Byte
+  
+        sPort.write(zValBytes[1]); //Z Coord High Byte
+        sPort.write(zValBytes[0]); //Z Coord Low Byte
+        
+        sPort.write(wristAngleValBytes[1]); //Wrist Angle High Byte
+        sPort.write(wristAngleValBytes[0]); //Wrist Angle Low Byte
+        
+        sPort.write(wristRotValBytes[1]); //Wrist Rotate High Byte
+        sPort.write(wristRotValBytes[0]); //Wrist Rotate Low Byte
+        
+        sPort.write(gripperValBytes[1]); //Gripper High Byte
+        sPort.write(gripperValBytes[0]); //Gripper Low Byte
+        
+        
+        
+        sPort.write(deltaValBytes[0]); //Delta Low Byte
+        
+        sPort.write(buttonByte); //Button byte
+        
+        sPort.write(extValBytes[0]); //Extended instruction
+  
+        
+        sPort.write((char)(255 - (xValBytes[1]+xValBytes[0]+yValBytes[1]+yValBytes[0]+zValBytes[1]+zValBytes[0]+wristAngleValBytes[1]+wristAngleValBytes[0]+wristRotValBytes[1]+wristRotValBytes[0]+gripperValBytes[1]+gripperValBytes[0]+deltaValBytes[0] + buttonByte+extValBytes[0])%256));  //checksum
+        
+      }
+      updateFlag =0 ; 
+    }
     
     
-  }
+  }//end update flag
   
   
 
@@ -885,7 +921,7 @@ void draw()
   
   
   
-  if(currentMillis - prevMillis > 33)
+  if((autoUpdateFlag ==1) & (currentMillis - prevMillis > 33))
   {
     prevMillis = currentMillis;
       //if the serial port is connected, then send 
